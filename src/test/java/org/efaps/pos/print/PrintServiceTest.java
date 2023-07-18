@@ -70,9 +70,10 @@ public class PrintServiceTest
         printerDef.setIdentifier("random");
         printerDef.setTemplate("test.txt");
         final var connection = new Connection();
+        connection.setType("Dummy");
         printerDef.setConnection(connection);
         properties.getPrinters().add(printerDef);
-        final var printService = new PrintService(properties);
+        final var printService = new PrintService(null, properties);
 
         printService.print(printerDef.getIdentifier(), dto);
     }

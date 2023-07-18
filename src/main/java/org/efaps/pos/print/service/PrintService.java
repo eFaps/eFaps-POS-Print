@@ -27,20 +27,25 @@ import org.efaps.pos.print.PrintProperties;
 import org.efaps.pos.print.PrintProperties.PrinterDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 
 import io.pebbletemplates.pebble.PebbleEngine;
 
 @Service("Print-PrintService")
-public class PrintService implements IPrintListener
+public class PrintService
+    implements IPrintListener
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(PrintService.class);
+    private final RestTemplateBuilder restTemplateBuilder;
     private final PrintProperties properties;
 
-    public PrintService(final PrintProperties properties)
+    public PrintService(final RestTemplateBuilder restTemplateBuilder,
+                        final PrintProperties properties)
     {
         this.properties = properties;
+        this.restTemplateBuilder = restTemplateBuilder;
     }
 
     @Override
@@ -81,13 +86,16 @@ public class PrintService implements IPrintListener
         }
 
         final String content = writer.toString();
-        System.out.println(content);
         LOG.info(content);
 
         IConnector connector = null;
         switch (printerDef.getConnection().getType()) {
             case "REST": {
-                connector= new RestConnector(printerDef.getConnection());
+                connector = new RestConnector(restTemplateBuilder, printerDef.getConnection());
+                break;
+            }
+            case "Dummy": {
+                connector = new DummyConnector();
                 break;
             }
             default:

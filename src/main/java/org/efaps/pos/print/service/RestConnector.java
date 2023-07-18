@@ -17,24 +17,35 @@
 package org.efaps.pos.print.service;
 
 import org.efaps.pos.print.PrintProperties.Connection;
+import org.efaps.pos.print.dto.PrintDto;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import jakarta.annotation.Resource;
-
-public class RestConnector implements IConnector
+public class RestConnector
+    implements IConnector
 {
-    @Resource
-    private RestTemplateBuilder restTemplateBuilder;
-    private final Connection connection;
 
-    public RestConnector(final Connection connection)
+    private final Connection connection;
+    private final RestTemplate restTemplate;
+
+    public RestConnector(final RestTemplateBuilder restTemplateBuilder,
+                         final Connection connection)
     {
+        this.restTemplate = restTemplateBuilder.build();
         this.connection = connection;
     }
 
     @Override
     public void print(String content)
     {
-        connection.getBaseUrl();
+        final var uri = UriComponentsBuilder.fromHttpUrl(connection.getBaseUrl()).path("print").build().toUri();
+        final var requestEntity = RequestEntity.post(uri).accept(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN)
+                        .body(PrintDto.builder()
+                                        .withContent(content)
+                                        .build());
+        restTemplate.exchange(requestEntity, String.class);
     }
 }
