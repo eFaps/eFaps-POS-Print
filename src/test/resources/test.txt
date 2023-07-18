@@ -1,0 +1,15 @@
+
+    Restaurante de Lujo
+         Dos de Mayo
+         Miraflores
+         Lima, Peru
+         {{payable.number}}
+
+         {{payable.date | date("yyyy-MM-dd")}}
+
+
+Cantidad Desc Precio
+{% for item in payable.items  %}
+{{ item.quantity | column(3,"right") }} {{item.product.description | column(20)}} {{item.crossPrice | numberformat("#.00") | column(6,"right")}}
+
+{% endfor %}
