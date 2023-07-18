@@ -14,23 +14,27 @@
  * limitations under the License.
  *
  */
-package org.efaps.pos.print;
+package org.efaps.pos.print.service;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.efaps.pos.print.PrintProperties.Connection;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 
+import jakarta.annotation.Resource;
 
-@Configuration("Print-Config")
-@EnableConfigurationProperties(value = { PrintProperties.class })
-@ComponentScan("org.efaps.pos.ubl")
-public class Config
+public class RestConnector implements IConnector
 {
+    @Resource
+    private RestTemplateBuilder restTemplateBuilder;
+    private final Connection connection;
 
-    private final PrintProperties properties;
-
-    public Config(final PrintProperties properties)
+    public RestConnector(final Connection connection)
     {
-        this.properties = properties;
+        this.connection = connection;
+    }
+
+    @Override
+    public void print(String content)
+    {
+        connection.getBaseUrl();
     }
 }

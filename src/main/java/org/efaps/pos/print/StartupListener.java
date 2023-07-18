@@ -16,21 +16,22 @@
  */
 package org.efaps.pos.print;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
-
-@Configuration("Print-Config")
-@EnableConfigurationProperties(value = { PrintProperties.class })
-@ComponentScan("org.efaps.pos.ubl")
-public class Config
+@Component("Print-StartupListener")
+public class StartupListener
+    implements ApplicationListener<ApplicationReadyEvent>
 {
 
-    private final PrintProperties properties;
+    private static final Logger LOG = LoggerFactory.getLogger(StartupListener.class);
 
-    public Config(final PrintProperties properties)
+    @Override
+    public void onApplicationEvent(final ApplicationReadyEvent event)
     {
-        this.properties = properties;
+        LOG.info("Print-Integration found");
     }
 }

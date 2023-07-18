@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.efaps.pos.dto.PrintPayableDto;
+import org.efaps.pos.listener.IPrintListener;
+import org.efaps.pos.print.PrintProperties;
+import org.efaps.pos.print.PrintProperties.PrinterDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,16 +32,38 @@ import org.springframework.stereotype.Service;
 import io.pebbletemplates.pebble.PebbleEngine;
 
 @Service("Print-PrintService")
-public class PrintService
+public class PrintService implements IPrintListener
 {
+
     private static final Logger LOG = LoggerFactory.getLogger(PrintService.class);
+    private final PrintProperties properties;
 
-    public void print(PrintPayableDto dto) {
+    public PrintService(final PrintProperties properties)
+    {
+        this.properties = properties;
+    }
 
+    @Override
+    public void print(final String identifier,
+                      final Object object)
+    {
+        final var printerDefOpt = properties.getPrinters().stream()
+                        .filter(printer -> identifier.equals(printer.getIdentifier()))
+                        .findFirst();
+        if (printerDefOpt.isPresent() && object instanceof PrintPayableDto) {
+            final var printerDef = printerDefOpt.get();
+            LOG.debug("Using PrinterDefintion: {}", printerDef);
+            print(printerDef, (PrintPayableDto) object);
+        }
+    }
+
+    public void print(final PrinterDefinition printerDef,
+                      final PrintPayableDto dto)
+    {
         final var engine = new PebbleEngine.Builder()
                         .extension(new PrintExtension())
                         .build();
-        final var template = engine.getTemplate("test.txt");
+        final var template = engine.getTemplate(printerDef.getTemplate());
 
         final Map<String, Object> context = new HashMap<>();
         context.put("payable", dto.getPayable());
@@ -52,12 +77,22 @@ public class PrintService
         try {
             template.evaluate(writer, context);
         } catch (final IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Catched", e);
         }
 
-        final String output = writer.toString();
-        System.out.println(output);
-        LOG.info(output);
+        final String content = writer.toString();
+        System.out.println(content);
+        LOG.info(content);
+
+        IConnector connector = null;
+        switch (printerDef.getConnection().getType()) {
+            case "REST": {
+                connector= new RestConnector(printerDef.getConnection());
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Unexpected value: " + printerDef.getConnection().getType());
+        }
+        connector.print(content);
     }
 }

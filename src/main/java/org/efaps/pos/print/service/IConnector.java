@@ -14,23 +14,9 @@
  * limitations under the License.
  *
  */
-package org.efaps.pos.print;
+package org.efaps.pos.print.service;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-
-
-@Configuration("Print-Config")
-@EnableConfigurationProperties(value = { PrintProperties.class })
-@ComponentScan("org.efaps.pos.ubl")
-public class Config
+public interface IConnector
 {
-
-    private final PrintProperties properties;
-
-    public Config(final PrintProperties properties)
-    {
-        this.properties = properties;
-    }
+    void print(String content);
 }

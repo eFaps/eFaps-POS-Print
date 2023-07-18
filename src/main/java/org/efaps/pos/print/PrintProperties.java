@@ -16,8 +16,84 @@
  */
 package org.efaps.pos.print;
 
+import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "printing")
 public class PrintProperties
 {
 
+    private final List<PrinterDefinition> printers = new ArrayList<>();
+
+    public List<PrinterDefinition> getPrinters()
+    {
+        return printers;
+    }
+
+    public static class PrinterDefinition
+    {
+
+        private String identifier;
+        private Connection connection = new Connection();
+        private String template;
+
+        public String getTemplate()
+        {
+            return template;
+        }
+
+        public void setTemplate(String template)
+        {
+            this.template = template;
+        }
+
+        public Connection getConnection()
+        {
+            return connection;
+        }
+
+        public void setConnection(Connection connection)
+        {
+            this.connection = connection;
+        }
+
+        public String getIdentifier()
+        {
+            return identifier;
+        }
+
+        public void setIdentifier(String identifier)
+        {
+            this.identifier = identifier;
+        }
+    }
+
+    public static class Connection
+    {
+
+        private String type = "REST";
+        private String baseUrl;
+
+        public String getType()
+        {
+            return type;
+        }
+
+        public void setType(String type)
+        {
+            this.type = type;
+        }
+
+        public String getBaseUrl()
+        {
+            return baseUrl;
+        }
+
+        public void setBaseUrl(String baseUrl)
+        {
+            this.baseUrl = baseUrl;
+        }
+    }
 }
