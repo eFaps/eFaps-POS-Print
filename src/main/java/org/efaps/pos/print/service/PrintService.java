@@ -55,15 +55,15 @@ public class PrintService
         final var printerDefOpt = properties.getPrinters().stream()
                         .filter(printer -> identifier.equals(printer.getIdentifier()))
                         .findFirst();
-        if (printerDefOpt.isPresent() && object instanceof PrintPayableDto) {
+        if (printerDefOpt.isPresent()) {
             final var printerDef = printerDefOpt.get();
             LOG.debug("Using PrinterDefintion: {}", printerDef);
-            print(printerDef, (PrintPayableDto) object);
+            print(printerDef, object);
         }
     }
 
     public void print(final PrinterDefinition printerDef,
-                      final PrintPayableDto dto)
+                      final Object object)
     {
         final var engine = new PebbleEngine.Builder()
                         .extension(new PrintExtension())
@@ -71,12 +71,11 @@ public class PrintService
         final var template = engine.getTemplate(printerDef.getTemplate());
 
         final Map<String, Object> context = new HashMap<>();
-        context.put("payable", dto.getPayable());
-        context.put("payableType", dto.getPayableType());
-        context.put("order", dto.getOrder());
-        context.put("additionalInfo", dto.getAdditionalInfo());
-        context.put("amountInWords", dto.getAmountInWords());
-        context.put("time", dto.getTime());
+        if (object instanceof PrintPayableDto) {
+            fillMap4Payable(context, (PrintPayableDto) object);
+        } else {
+            fillMap(context, object);
+        }
 
         final var writer = new StringWriter();
         try {
@@ -102,5 +101,22 @@ public class PrintService
                 throw new IllegalArgumentException("Unexpected value: " + printerDef.getConnection().getType());
         }
         connector.print(content);
+    }
+
+    private void fillMap(final Map<String, Object> context,
+                         final Object object)
+    {
+        context.put("object", object);
+    }
+
+    private void fillMap4Payable(final Map<String, Object> context,
+                                 final PrintPayableDto dto)
+    {
+        context.put("payable", dto.getPayable());
+        context.put("payableType", dto.getPayableType());
+        context.put("order", dto.getOrder());
+        context.put("additionalInfo", dto.getAdditionalInfo());
+        context.put("amountInWords", dto.getAmountInWords());
+        context.put("time", dto.getTime());
     }
 }

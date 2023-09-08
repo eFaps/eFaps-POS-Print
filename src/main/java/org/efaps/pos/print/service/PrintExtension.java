@@ -29,6 +29,7 @@ public class PrintExtension extends AbstractExtension
     {
         final var map = new HashMap<String, Filter>();
         map.put("column", new ColumnFilter());
+        map.put("strReplaceAll", new StrReplaceAllFilter());
         return map;
     }
 }
